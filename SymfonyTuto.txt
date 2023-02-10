@@ -1,0 +1,552 @@
+verifier que tout est ok pour le fonctionnement de Symphony:
+symfony check:requirements
+///////////////////////////////////////////////////////////afficher commande////////////////////////////////////////
+symfony console
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+creation nouveau projet:
+symfony new NomDuProjet --webapp
+(si c'est la 1ere fois demande mail et nom pour github)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Demarrer server symfony (depuis le projet):
+symfony serve                       ///////(IMPORTANT affiche dans un encadré vert l'url qui sera utilisé exemple: http://127.0.0.1:8000 auquelle on rajoutera un template(vue) exemple:http://127.0.0.1:8000/test)  )
+symfony server:stop
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+creation du controller:
+symfony console make:controller
+puis
+NomDuController
+
+ou directement:
+symfony console make:controller NomDuController
+
+exemple: 
+~/Bureau/vs_code/full_stack/Symfony/premier$ symfony console make:controller test
+
+         //////       (Cette commande vous permet de créer un contrôleur Test. En fait deux fichiers viennent d'être créés.) \\\\\\
+
+cela creer:  created: src/Controller/TestController.php      //////    (La classe Test contenant la méthode index)  \\\\\\
+             created: templates/test/index.html.twig        //////     (Et une vue )                                \\\\\\
+
+
+////////(Vous pouvez vérfier le bon fonctionnement de cet exemple en tapant http://127.0.0.1:8000/test dans votre navigateur.) \\\\\\\
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////DOCTRINE\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+Configuration
+
+Tous d'abord, il va falloir dire à Symfony (ou plutôt Doctrine) où se situe le moteur de base de donnée et comment s'y connecter. Cela se passe dans le fichier .env
+ON PEUT CREER .env.local est y mettre et modifier provenant de .env : DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=14&charset=utf8"
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Création de la base
+
+Symfony nous permet de créer directement la base à partir de sa CLI avec la commande:               
+
+symfony console doctrine:database:create
+
+Création de la table
+
+symfony console make:entity
+
+Mettre les Constraint exemple : #[Assert\NotBlank()]
+                                #[Assert\Length(min: 2, max: 50)]
+                                #[Assert\Positive]
+                                #[Assert\LessThan(51)]
+Enfin la CLI nous indique qu'il reste à persister tout ça en base avec.
+
+symfony console make:migration
+symfony console doctrine:migrations:migrate
+
+
+//////////////////////////////////////////////////////////constraint/validator////////////////////////////////////////////////////////
+ Pour qu'on ne puisse pas mettre n'importe quoi dans la bdd on utilise des Assert.
+
+ajouter dans l'entity:
+use Symfony\Component\Validator\Constraints as Assert;
+
+exemple :         #[ORM\Column(length: 50)]
+                  #[Assert\Length(min: 2, max: 50)]
+                  private ?string $name = null;
+
+
+Les Fixtures (alimentation bdd)              https://4wdev.tomoetek.fr/read/symf6-6    ///////////    https://ncode.amorce.org/ressources/Pool/CDA/WEB_Symfony_frc/fixture.html
+
+Symfony nous offre la possibilité de générer des données en base. L'extension n'est pas présente par défaut mais nous allons l'ajouter à nos dépendance de dev.
+
+composer require --dev orm-fixtures
+puis
+
+symfony console make:fixture  ou php bin/console make:fixture NomSouhaité
+
+
+pour exécuter la fixture cad ecrire la requete sql et l'executer
+symfony console doctrine:fixtures:load
+
+
+On va ajouter une autre extension pour générer aléatoirement des données: FakerPhp
+
+composer require fakerphp/faker --dev
+
+Dans la fixture importez les class Generator et Factory telle que dans l'exemple :      
+
+<?php
+
+namespace App\DataFixtures;
+
+use Faker\Factory;
+use Faker\Generator;
+use App\Entity\Ingredient;
+use Doctrine\Persistence\ObjectManager;
+use Doctrine\Bundle\FixturesBundle\Fixture;
+
+class AppFixtures extends Fixture
+{
+
+    // Déclaration du générateur de faker
+    private Generator $faker;
+
+    public function __construct()
+    {
+        $this->faker = Factory::create('fr_FR');
+    }
+
+    public function load(ObjectManager $manager): void
+    {
+        for ($i = 0; $i < 50; $i++) {
+            $ingredient = new Ingredient();
+            $ingredient->setName($this->faker->word())
+                ->setPrice(mt_rand(0, 100));
+
+            $manager->persist($ingredient);
+        }
+            $manager->flush();
+    }
+}
+             
+
+Pour utiliser cette fixture il suffit de lancer la commande suivante dans la console
+symfony console doctrine:fixtures:load ou php bin/console d:f:l
+
+Fixtures à partir de données existantes     https://ncode.amorce.org/ressources/Pool/CDA/WEB_Symfony_frc/fixture2.html
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Creation formulaire (ca lie les pages et la base de donnée !)
+
+symfony console make:crud
+
+
+
+
+ exemple resultat:
+                        The class name of the entity to create CRUD (e.g. FiercePizza):
+ > Artist
+
+ Choose a name for your controller class (e.g. ArtistController) [ArtistController]:
+ > 
+
+ Do you want to generate tests for the controller?. [Experimental] (yes/no) [no]:
+ > 
+
+ created: src/Controller/ArtistController.php
+ created: src/Form/ArtistType.php
+ created: templates/artist/_delete_form.html.twig
+ created: templates/artist/_form.html.twig
+ created: templates/artist/edit.html.twig
+ created: templates/artist/index.html.twig
+ created: templates/artist/new.html.twig
+ created: templates/artist/show.html.twig
+
+
+
+si probleme de convertion en string ajouter la methode __ToString dans l'entité concerné exemple:  
+
+ici dans Artist.php
+
+  public function __toString()
+    {
+        return $this->name;
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Donner une apparence Bootstrap
+ajouter dans :
+
+# config/packages/twig.yaml
+twig:
+    form_themes: ['bootstrap_5_layout.html.twig']
+
+
+//////////////////////////////////////////////////////////L'authentification////////////////////////////////////////////////////////////////////////////////
+
+Installation du Bundle Security:
+composer require symfony/security-bundle
+
+puis
+symfony console make:user  
+(ca hash aussi le mot de passe)   
+
+Création de la table user
+
+Pour que l'authentification corresponde à nos besoins, il va nous falloir stocker les différents utilisateurs en base de données. On pourra stocker leurs informations (leur rôle notamment).
+
+Créez une table user contenant les informations suivantes :
+
+    un email (varchar 255, non null)
+    un mot de passe (varchar 255, non null)
+    un role (varchar 255, non null)
+
+pensez a :
+symfony console make:migration
+symfony console doctrine:migrations:migrate
+
+//////////////////////////////////////////////////////////////AUTHENTIFICATION/////////////////////////////////////////////////////////////////////
+
+symfony console make:auth
+php bin/console make:crud pour User
+////////////////////////////////////////////////////////////////////INSCRIPTION/////////////////////////////////////////////////////////////////////////
+
+symfony console make:registration-form
+
+/////////////////////////////////////////////////////////////////////Bonus////////////////////////////////////////////////////////////////////////////////////
+
+Paginator : https://github.com/KnpLabs/KnpPaginatorBundle   
+
+installer : composer require knplabs/knp-paginator-bundle
+
+copier le YAML du github --> créer knp_paginator.yaml dans config/packages
+
+modifier controller exemple:                                                                                                                    
+penser a import class paginator
+
+
+#[Route('/ingredient')]
+class IngredientController extends AbstractController
+{
+    #[Route('/', name: 'app_ingredient_index', methods: ['GET'])]
+    public function index(IngredientRepository $ingredientRepository, PaginatorInterface $paginator, Request $request): Response
+    {
+
+    $ingredients = $paginator->paginate(
+        $ingredientRepository->findAll(), /* query NOT result */
+        $request->query->getInt('page', 1), /*page number*/
+        10 /*limit per page*/
+    );
+        return $this->render('ingredient/index.html.twig', [
+            'ingredients' => $ingredients,
+        ]);
+    }
+
+
+
+ajouter dans le template aprés </table> exemple : 
+
+
+      </tbody>
+    </table>
+<div class="navigation">
+    {{ knp_pagination_render(ingredients) }}
+</div>
+
+ajouter visuelbootstrap a paginator modifier dans config/packages/knp_paginator.yaml
+pagination: '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig'
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+afficher nombre ingredient dans template ajouter exemple :
+
+<div class="count mt-4">
+        Il y a {{ingredients.getTotalItemCount }} ingrédients 
+        </div>
+
+ pour eviter erreur en cas de tableau ici ingredient vide ajouter par exemple :
+
+{% block body %}
+    <h1>Ingredient index</h1>
+    {% if not ingredients.items is same as([]) %}
+    <div class="count mt-4">
+        Il y a {{ingredients.getTotalItemCount }} ingrédients 
+        </div> 
+
+en bas de page :
+
+  {% else %}
+    <h4> Il n'y a pas d'ingrédients </h4>
+    {% endif %}
+{% endblock %}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Unique entity https://symfony.com/doc/current/reference/constraints/UniqueEntity.html
+
+ajouter dans l'entity 
+#[UniqueEntity('nomcolonne')]
+
+ne pas oublier d'ajouter :
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+
+je sais pas si obligatoire pour refresh utiliser php bin/console d:f:l
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+flash message https://symfony.com/doc/current/session.html#session-intro
+
+ajouter dans le controller telle que : 
+
+#[Route('/new', name: 'app_ingredient_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, IngredientRepository $ingredientRepository): Response
+    {
+        $ingredient = new Ingredient();
+        $form = $this->createForm(IngredientType::class, $ingredient);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $ingredientRepository->save($ingredient, true);
+
+            $this->addFlash(
+                'success',
+                'Ingrédient ajouté !'
+            );
+
+            return $this->redirectToRoute('app_ingredient_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->renderForm('ingredient/new.html.twig', [
+            'ingredient' => $ingredient,
+            'form' => $form,
+        ]);
+    }
+
+ajouter dans le template telle que :
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Ingredient index{% endblock %}
+
+{% block body %}
+    <h1>Ingredient index</h1>
+
+         {# read and display just one flash message type #}
+{% for message in app.flashes('success') %}
+    <div class="alert alert-success">
+        {{ message }}
+    </div>
+{% endfor %}
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Doctrine Lifecycle Callbacks  https://symfony.com/doc/current/doctrine/events.html#doctrine-lifecycle-callbacks
+pour donner une valeur a la colonne updateAt qui ne peut pas etre null.
+
+ajouter dans l'entity #[ORM\HasLifecycleCallbacks] sous les use
+
+creer une function :
+
+#[ORM\PrePersist]
+    public function setUpdateAtValue()
+    {
+        $this->updateAt = new \DateTimeImmutable();
+    }
+ajouter $this->updateAt = new \DateTimeImmutable(); dans le __construct()
+
+public function __construct()
+    {
+        $this->ingredients = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updateAt = new \DateTimeImmutable();
+
+    }
+
+puis
+php bin/console d:f:l
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+modifier mot de passe avec hasher
+
+dans UserController ajouter la logique du hasher du RegistrationController exemple:
+penser a import les class et d'ajouter dans la function UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager
+
+    #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, User $user, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    {
+         // UserPasswordType est le nom du form a utilisé 
+        $form = $this->createForm(UserPasswordType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $userRepository->save($user, true);
+            $user->setPassword(
+                $userPasswordHasher->hashPassword(
+                    $user,
+                    $form->get('plainPassword')->getData()
+                )
+            );
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->renderForm('user/edit_password.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
+    }
+
+Dans le form mettre un label a add plainPassword :
+
+<?php
+
+namespace App\Form;
+
+use App\Entity\User;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+
+class UserPasswordType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            // ->add('email')
+            
+            // ->add('password')
+            ->add('plainPassword', PasswordType::class, [
+                // instead of being set onto the object directly,
+                // this is read and encoded in the controller
+                'mapped' => false,
+                'attr' => ['autocomplete' => 'new-password'],
+                'label' => 'new password',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Please enter a password',
+                    ]),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Your password should be at least {{ limit }} characters',
+                        // max length allowed by Symfony for security reasons
+                        'max' => 4096,
+                    ]),
+                ],
+            ])
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => User::class,
+        ]);
+    }
+}
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Confirmation mot de passe     https://symfony.com/doc/current/reference/forms/types/repeated.html
+modifier dans le form:
+
+public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            // ->add('email')
+            
+            // ->add('password')
+            ->add('plainPassword', RepeatedType::class, [
+                // instead of being set onto the object directly,
+                // this is read and encoded in the controller
+                'type' => PasswordType::class,
+    'invalid_message' => 'The password fields must match.',
+    'options' => ['attr' => ['class' => 'password-field']],
+    'required' => true,
+    'first_options'  => ['label' => 'Password'],
+    'second_options' => ['label' => 'Repeat Password'],
+                'mapped' => false,
+                'attr' => ['autocomplete' => 'new-password'],
+                'label' => 'new password',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Please enter a password',
+                    ]),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Your password should be at least {{ limit }} characters',
+                        // max length allowed by Symfony for security reasons
+                        'max' => 4096,
+                    ]),
+                ],
+            ])
+        ;
+    }
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+afficher uniquement c'est qui est lier a l'user modifier dans le controller index:
+
+   $ingredientRepository->findAll(),       par     $ingredientRepository->findBy(['user' => $this->getUser()]),
+
+   et ajouter dans /new   $ingredient->setUser($this->getUser()); pour lier l'ingredient a l'user exemple:
+
+ #[Route('/new', name: 'app_ingredient_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, IngredientRepository $ingredientRepository): Response
+    {
+        $ingredient = new Ingredient();
+        $form = $this->createForm(IngredientType::class, $ingredient);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $ingredient->setUser($this->getUser());
+            $ingredientRepository->save($ingredient, true);
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+autoriser l'access en fonction des roles
+https://symfony.com/bundles/SensioFrameworkExtraBundle/current/annotations/security.html
+
+////////////////////////////////////////////////////liste des problemes rencontré et solution //////////////////////////////////////////////////////////////////
+///////////////////////PROBLEME////////////////                   ////////SOLUTION///////////
+
+Class don't exist                                       |          Clique droit sur la class ==> import class ==>  (selectionner)  Symfony\Component\Form\Extension\Core\Type\TextType;
+exemple pour TextType::class    :
+# Form/ArtistType.php
+  ->add('ProductName', TextType::class, [
+                 'label' => 'Nom du produit',
+                 'attr' => [
+                     'placeholder' => 'Produit',
+                 ],
+             ])
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------  
+
+Class "App\Form\Regex" not found                        |         Clique droit sur la class ==> import class ==>  (selectionner)  Symfony\Component\Validator\Constraints\Regex;
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+supprimer une table                                     |         supprimer entity et controller concerné
+                                                                  supprimer migrations dans le projet et dans la base de donnée
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+DateTimeImmutable ne se met pas a la date tout seul     |         ajoutez dans l'entity :   
+                                                                                            public function __construct()
+                                                                                                {
+                                                                                                    $this->createdAt = new DateTimeImmutable();
+                                                                                                }
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------                                       
+Probleme de clé étrangére                              | refaire la base de donnée 
+                                                         php bin/console d:d:d --force
+                                                        php bin/console d:d:c
+                                                        symfony console make:migration
+                                                        symfony console doctrine:migrations:migrate
+                                                        symfony console d:f:l

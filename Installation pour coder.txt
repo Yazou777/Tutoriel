@@ -1,0 +1,136 @@
+					github
+			https://ncode.amorce.org/parcours/164/7120	
+					
+Télécharger GIT  https://git-scm.com/
+
+configurer GIT:
+
+Renseigner votre nom d'utilisateur :
+(Demandera le mdp/token de votre github.)
+
+git config --global user.name "Nom prenom"
+
+Puis votre adresse mail :
+
+git config --global user.email "adresse@mail.fr"
+
+Ces deux commandes permettront à chacun de vos commits d'être identifiés.
+
+
+facultatif:
+touch README
+git status
+git add README
+git status
+git commit
+
+
+Git clone lienURLDuRepo
+
+
+Pour ajouter un projet non present sur a github:
+ouvrir terminal sur le dossier 
+git ini
+git add .
+git commit -m "initial commit"
+git remote add origin URLDuRepoCreerSurGitHub
+git push -u origin master
+
+Générer un mdp/token sur github
+
+aller dans profil/setting/devellopeurSetting/personnal/accessTokers/Generate
+no expiration
+tout select
+generate toker.
+
+
+Push sur github
+
+git status
+giy add . 
+git commit -m "commit"
+git status
+git push
+
+
+Git pull
+
+
+
+
+				LOGICIEL A INSTALLER
+				
+télécharger VS CODE :
+Extention : server live
+            YoanDevPack
+ 
+            
+Maria DB :
+https://ncode.amorce.org/ressources/Pool/MS_FULL_STACK/BDD_Decouverte_MySQL/mariadb.html
+sudo apt install mariadb-server
+sudo mysql
+
+    pour créer l'utilisateur avec le mot de passe voulu :
+
+    CREATE USER 'admin'@'localhost' IDENTIFIED BY '<VotreMotDePasse>';
+    -- renseignez le mot de passe de votre choix
+
+    pour donner tous les droits à cet utilisateur :
+
+    GRANT ALL PRIVILEGES ON *.* to 'admin'@'localhost' WITH GRANT OPTION;
+
+    pour valider l'activation des droits :
+
+    FLUSH PRIVILEGES;
+
+    pour sortir de MySQL :
+
+    exit;
+
+
+
+
+Télécharger Heidi
+
+
+
+PhPMyAdmin :
+https://ncode.amorce.org/ressources/Pool/MS_FULL_STACK/PHP/PHP_Presentation_Installation.html
+sudo apt install phpmyadmin
+php --version
+cd /etc/php/8.1/cli
+
+    Pensez à vérifier et adapter si nécessaire cette commande à votre version de PHP, trouvée grâce à php -v !
+
+sudo gedit php.ini
+modifier:				error_reporting = E_ALL         ; = ligne ~472
+					display_errors = On             ; = ligne ~489
+					display_startup_errors = On     ; = ligne ~500
+					log_errors = On                 ; = ligne ~510
+Sauvegardez et quittez.
+
+ouvrir server php:
+dans terminal 
+php -S 127.0.0.1:8000
+sur internet
+http://127.0.0.1:8000/
+
+
+Symfony :
+https://ncode.amorce.org/ressources/Pool/CDA/WEB_Symfony_frc/installation.html
+symfony check:requirements
+       Installation de Composer
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php
+sudo mv composer.phar /usr/local/bin/composer
+rm -f composer-setup.php
+
+
+Installation de symfony-cli
+
+echo 'deb [trusted=yes] https://repo.symfony.com/apt/ /' | sudo tee /etc/apt/sources.list.d/symfony-cli.list
+sudo apt update
+sudo apt install symfony-cli -y
+
+VichUploaderBundle pour upload image avec Symfony
