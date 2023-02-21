@@ -45,7 +45,7 @@ cela creer:  created: src/Controller/TestController.php      //////    (La class
 Configuration
 
 Tous d'abord, il va falloir dire à Symfony (ou plutôt Doctrine) où se situe le moteur de base de donnée et comment s'y connecter. Cela se passe dans le fichier .env
-ON PEUT CREER .env.local est y mettre et modifier provenant de .env : DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=14&charset=utf8"
+ON PEUT CREER .env.local est y mettre et modifier provenant de .env : DATABASE_URL="mysql://admin:l73zeld1!@127.0.0.1:3306/ExoECommerce?serverVersion=mariadb-10.3.34&charset=utf8mb4"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +65,8 @@ Mettre les Constraint exemple : #[Assert\NotBlank()]
                                 #[Assert\LessThan(51)]
 Enfin la CLI nous indique qu'il reste à persister tout ça en base avec.
 
+php bin/console d:s:u --force
+ou
 symfony console make:migration
 symfony console doctrine:migrations:migrate
 
@@ -223,6 +225,17 @@ php bin/console make:crud pour User
 symfony console make:registration-form
 
 /////////////////////////////////////////////////////////////////////Bonus////////////////////////////////////////////////////////////////////////////////////
+
+A ajouter dans composer.json dans la partie Scripts pour reset base de donnée
+   "fixtures":[
+            "php bin/console d:d:d --force --if-exists",
+            "php bin/console d:d:c",
+            "php bin/console d:s:u --force --complete",
+            "php bin/console d:f:l --append"
+        ]
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Paginator : https://github.com/KnpLabs/KnpPaginatorBundle   
 
