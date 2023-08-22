@@ -1,3 +1,14 @@
+	https://ncode.amorce.org/ressources/Pool/COMMUN/ubuntu/ubuntu.html
+	
+	Pour installer tous les outils de développement rapidement (php, vscode, mariadb, chrome, edge, composer, symfony, git), utilisez ce script 
+	
+	wget -O - https://ncode.amorce.org/install | bash
+	
+	.Cette commande ajoute un utilisateur (admin Afpa1234) dans mariadb
+	
+	
+	
+////////////////////////////////////////////////////////////////////////////////////////////////	
 					github
 			https://ncode.amorce.org/parcours/164/7120	
 					
