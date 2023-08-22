@@ -47,6 +47,7 @@ Configuration
 Tous d'abord, il va falloir dire à Symfony (ou plutôt Doctrine) où se situe le moteur de base de donnée et comment s'y connecter. Cela se passe dans le fichier .env
 ON PEUT CREER .env.local est y mettre et modifier provenant de .env : DATABASE_URL="mysql://admin:l73zeld1!@127.0.0.1:3306/ExoECommerce?serverVersion=mariadb-10.3.34&charset=utf8mb4"
 
+Si tu récup un projet depuis github il faut recréer la base de donnée avec "composer fixtures" si notannement (dans compose.json pour voir si elle existe)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Création de la base
