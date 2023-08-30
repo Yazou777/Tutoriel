@@ -23,7 +23,8 @@ CREATE TABLE FOURNIS(
    CONFOU VARCHAR(15)  NOT NULL,
    SATISF TINYINT,
    PRIMARY KEY(NUMFOU),
-   CHECK (SATISF>0 AND SATISF<11)           /* constraint qui verifie valeur il existe aussi CHECK(GENDER in ('Male', 'Female', 'Unknown')) */
+   CHECK (SATISF>0 AND SATISF<11),           /* constraint qui verifie valeur il existe aussi CHECK(GENDER in ('Male', 'Female', 'Unknown')) */
+   CHECK (POSFOU RLIKE '[0-9][0-9][0-9][0-9][0-9]')
 );
 
 CREATE TABLE ENTCOM(
