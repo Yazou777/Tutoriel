@@ -1,2 +1,119 @@
 https://ncode.amorce.org/parcours/201/7383
 https://ncode.amorce.org/parcours/202/7336
+
+
+DROP DATABASE if EXISTS PAPYRUS;   /* supprime la bd si deja existante */
+CREATE DATABASE PAPYRUS;
+
+USE PAPYRUS;
+
+
+
+CREATE INDEX cli_nom
+ON Client (cli_nom);
+https://ncode.amorce.org/ressources/Pool/MS_FULL_STACK/BDD_Creer_MySQL/utilisateurs.html
+https://ncode.amorce.org/ressources/Pool/CDA/BDD_Creer_la_base_MySQL/utilisateurs_mysql.html
+
+CREATE USER 'nom_utilisateur'@'adresse_ip' IDENTIFIED BY 'mot_de_passe';
+CREATE USER 'dave_loper'@'123.45.67.89' IDENTIFIED BY '1Ksable';
+adresse_ip peut être remplacé par le caractère % pour spécifier toutes les adresses.
+
+Suppression d'un utilisateur
+
+DROP USER 'nom_utilisateur'@'adresse_ip';
+
+GRANT ALL PRIVILEGES ON nom_de_la_base.* TO 'utilisateur'@'adresse_ip';
+
+Exemple :
+
+GRANT ALL PRIVILEGES ON papyrus.* TO 'dave_loper'@'%';
+
+Affecter de droits
+
+	
+GRANT privilege 
+	
+ON objet 
+	
+TO utilisateur;
+
+    privilege = SELECT, INSERT, DELETE, UPDATE, CREATE, DROP...
+    objet = nom_base.nomtable (exemple: papyrus.fournis)
+    utilisateur = nom de l'utilisateur
+
+Exemple 1 :
+
+	
+GRANT select 
+	
+ON papyrus.fournis 
+	
+TO dave_loper;
+
+Ici, l'utilisateur dave_loper pourra seulement lire la table fournis de la base papyrus : cette commande désactive toutes les autres possibilités (INSERT, UPDATE...).
+
+Exemple 2 : accorder plusieurs privilèges :
+
+	
+GRANT SELECT, INSERT, UPDATE 
+	
+ON papyrus.vente
+	
+TO dave_loper;
+
+Ici, l'utilisateur dave_loper pourra afficher, insérer ou modifier des données.
+
+Attention !
+
+L'instruction GRANT affecte les droits aux utilisateurs mais ne les active pas !
+
+Ainsi, une fois tous les privilèges affectés comme vous le souhaitez, il faut utiliser l'instruction FLUSH, afin de les rendre effectifs. La syntaxe est la suivante :
+
+FLUSH PRIVILEGES;
+
+GRANT ALL PRIVILEGES             -- accorder tous les privilèges
+ON nom_de_la_base.*              -- sur la BDD nom_de_la_base complète (*)
+TO 'utilisateur'@'adresse_ip';   -- à "utilisateur", connecté depuis "adresse_ip"
+FLUSH PRIVILEGES;                -- activer les droits nouvellement affectés
+
+
+Exemple :
+
+GRANT ALL PRIVILEGES ON hotel.* TO 'admin'@'%';
+FLUSH PRIVILEGES;
+
+https://ncode.amorce.org/ressources/Pool/CDA/BDD_Assurer_sauvegardes_MySQL/restauration_sauvegarde_mysql.html
+
+
+
+Sauvegarde et restauration sous MySql/MariaDb
+Sauvegarde
+
+    Ouvrez un terminal
+
+    Pour effectuer la sauvegarde (ou « dump »), saisir la commande :
+
+mysqldump --user=xxx --password=xxx gescom > backup_gescom.sql
+
+    L'option --databases est suivie du nom de la base à sauvegarder
+    Après le chevron vers la droite (>), on indique le nom du fichier de sauvegarde
+
+    Il existe de nombreuses options de sauvegarde, qui permettent d'indiquer par exemple que l'on souhaite sauvegarder uniquement la structure des tables ou les données, ajouter des instructions IF EXISTS etc.
+
+Restauration
+
+Pour restaurer, on va utiliser la commande mysql (et non plus mysqldump).
+
+    Par précaution, on va restaurer la base gescom sous un autre nom.
+
+    Pour la restauration, on va utiliser la commande mysql .
+
+Exécutez la commande suivante :
+
+cat backup_gescom.sql | mysql --user=xxx --password=xxx new_gescom
+
+    Dans cet exemple nous vidons le script backup_gescom.sql dans la commande mysql. Toutes les commandes du fichoier backup_gescom.sql sont éxécutées...
+
+    La base new_gescom est utilisée comme base de restauration, il faut qu'elle existe.
+
+
