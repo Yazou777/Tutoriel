@@ -1,0 +1,50 @@
+https://ncode.amorce.org/ressources/Pool/CDA/BDD_Triggers_MySQL/bien_debuter_les_declencheurs.html
+
+insert_reservation : interdire l'ajout de réservation pour les hôtels possédant déjà 10 réservations.
+
+
+
+affiche le nombre de reservation par hotel
+
+SELECT hot_id, COUNT(hot_id) AS 'nb_res'
+FROM reservations
+JOIN chambres ON res_cha_id = cha_id
+JOIN hotels ON cha_hot_id = hot_id
+
+GROUP BY hot_id
+
+
+le triggers 
+
+
+DELIMITER |
+
+CREATE TRIGGER insert_reservation 	AFTER INSERT ON reservations
+	FOR EACH ROW
+	BEGIN
+	DECLARE id_r INT;
+	DECLARE nb_res INT;
+	SET id_r = NEW.res_id;
+	SET nb_res =
+	(SELECT COUNT(hot_id) AS 'nb_res'
+	FROM reservations
+	JOIN chambres ON res_cha_id = cha_id
+	JOIN hotels ON cha_hot_id = hot_id
+	WHERE hot_id= (SELECT hot_id 	FROM reservations 	JOIN chambres ON res_cha_id = cha_id 	JOIN hotels ON cha_hot_id = hot_id WHERE res_id=id_r)
+	GROUP BY hot_id);
+	if nb_res > 10 then
+ 
+	SIGNAL SQLSTATE '40000' SET MESSAGE_TEXT = 'Un problème est survenu. Règle de gestion altitude !';
+	END IF;
+	END;
+	|
+	DELIMITER ;
+
+
+
+SHOW TRIGGERS 
+
+ajouter des reservation pour testé le trigger
+
+INSERT INTO reservations (res_cha_id, res_cli_id, res_date, res_date_debut, res_date_fin, res_prix, res_arrhes)
+VALUES (60, 7, '2023-09-07 11:22:06', '2023-09-07 11:22:06', '2023-09-07 11:22:06', 666, 666)
