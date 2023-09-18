@@ -1,0 +1,31 @@
+https://ncode.amorce.org/ressources/Pool/MS_FULL_STACK/PHP/PHP_Bases.html
+
+
+
+Créez un fichier nommé bonjour.php et collez-y le code suivant :
+
+    <!DOCTYPE html>
+    <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body>
+            <?php 
+                echo "Bonjour le monde"; 
+                echo 'Bonjour le monde'; 
+            ?> 
+        </body>
+    </html>
+
+    IMPORTANT : ne jamais oublier qu'une instruction en PHP doit toujours (sauf cas très particuliers) être terminée par un point-virgule !
+
+
+Lancer le fichier : http://127.0.0.1:8080/bonjour.php (adapter le port de connexion si nécessaire).
+
+Pour rappel :
+
+    pour être exécuté sur Linux, le répertoire contenant votre fichier doit être lié à un serveur local démarré sur le projet (Ouvrir un Terminal dans le projet et saisir php -S 127.0.0.1:8080 ; laisser le terminal ouvert tant que le serveur doit tourner)
+    pour être exécuté sur Windows, ce fichier doit être placé dans le répertoire www de votre outil de développement locale, par ex: C:/laragon/www.
