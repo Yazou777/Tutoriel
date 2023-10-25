@@ -530,6 +530,13 @@ afficher uniquement c'est qui est lier a l'user modifier dans le controller inde
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 autoriser l'access en fonction des roles
 https://symfony.com/bundles/SensioFrameworkExtraBundle/current/annotations/security.html
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Moyen de painement avec stripe
+https://stripe.com/docs/checkout/quickstart
+https://www.youtube.com/watch?v=zPLe3mLFcqc
+
+dans le terminal Installez la bibliothèque : composer require stripe/stripe-php
+
 
 ////////////////////////////////////////////////////liste des problemes rencontré et solution //////////////////////////////////////////////////////////////////
 ///////////////////////PROBLEME////////////////                   ////////SOLUTION///////////
