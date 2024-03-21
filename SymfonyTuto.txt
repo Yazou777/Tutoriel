@@ -368,7 +368,7 @@ pour donner une valeur a la colonne updateAt qui ne peut pas etre null.
 
 ajouter dans l'entity #[ORM\HasLifecycleCallbacks] sous les use
 
-creer une function :
+creer une function ou modifier si deja existante :
 
 #[ORM\PrePersist]
     public function setUpdateAtValue()
@@ -542,10 +542,12 @@ https://www.youtube.com/watch?v=cRaOQHmIH7U
 https://github.com/dustin10/VichUploaderBundle/blob/master/docs/index.md
 https://github.com/dustin10/VichUploaderBundle/blob/master/docs/usage.md
 option dans le doc faire en sorte que une image delete ou remplacer par une autre soit supprimer du dossier images pour pas accumullé vue que chaque upload ajouete l'image avec a chaque fois un nouveau nom
+
 Add VichUploaderBundle by running this command from the terminal at the root of your Symfony project:
 
 composer require vich/uploader-bundle
 (prerequis pour que ca marche avoir une colone updateAt parce que le bundle a besoin que quelque chose se modifie pour marcher correctement)
+(mettre y a la question)
 mettre dans config/package/vich_uploader.yaml :
 
  # config/packages/vich_uploader.yaml or app/config/config.yml
@@ -561,9 +563,17 @@ vich_uploader:
             upload_destination: '%kernel.project_dir%/public/images/products'
             namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
 
+        //ici j'ai mis products aprés mapping mais on peut mettre ce que l'on veut
+
 dans l'entité concerné ajouter : 
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
+et ajouter aussi #[Vich\Uploadable] aprés les use voir exemple qui suit:
+#[ORM\HasLifecycleCallbacks]
+#[Vich\Uploadable]
+#[ORM\Entity(repositoryClass: ProduitRepository::class)]
+class Produit
 
 ajout dans le colonne :
  // NOTE: This is not a mapped field of entity metadata, just a simple property.
@@ -572,6 +582,11 @@ ajout dans le colonne :
 
   //  #[ORM\Column(nullable: true)]
   //  private ?string $imageName = null;
+
+  ici #[ORM\Column(nullable: true)]
+  //  private ?string $imageName = null; 
+  sont en commentaire/inutile car j'ai deja crée une colonne string pour mes images
+  noter aussi que #[Vich\UploadableField(mapping: 'le nom choisi apres mapping dans config/packages/vich_uploader.yaml', fileNameProperty: 'le nom de votre colonne image exemple pour moi pro_image')]
 
 ajout dans les fonctions:
 
@@ -609,10 +624,14 @@ ajout dans les fonctions:
     {
         return $this->imageName;
     }
+
+ici aussi si vous avez deja créé une colonne string pour vos image vous avez deja des set et getimage() inutile de remettre ceux de l'exemple ci dessus.
+
  ajout dans le form: 
    ->add('imageFile', VichImageType::class, [
                 'label' => 'Image du produit'
             ])
+            (si dans le formulaire vous avez add updateDate il faut le supprimé ca cause une erreur car notre updateDate se et a jour deja seul)
  ajout dans show.html.twig :
             <tr>
                 <img style="max-width: 500px;" src="{{ vich_uploader_asset(produit, 'imageFile') }}">
